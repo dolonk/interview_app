@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
-import '../../../../core/constants/route_constants.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../route/route_name.dart';
 import '../viewmodels/auth_viewmodel.dart';
 import '../widgets/auth_text_field.dart';
 
@@ -43,7 +43,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           context,
         ).showSnackBar(SnackBar(content: Text(next.failure!.message), backgroundColor: AppColors.error));
       } else if (next.user != null) {
-        Navigator.pushReplacementNamed(context, RouteConstants.home);
+        Navigator.pushReplacementNamed(context, RouteName.home);
       }
     });
 
@@ -147,7 +147,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     const Text("Don't have an account? ", style: TextStyle(color: AppColors.textSecondary)),
                     TextButton(
                       onPressed: () {
-                        Navigator.pushNamed(context, RouteConstants.register);
+                        Navigator.pushNamed(context, RouteName.register);
                       },
                       child: const Text('Sign Up'),
                     ),

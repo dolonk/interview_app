@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
-import '../../../../core/constants/route_constants.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../route/route_name.dart';
 import '../viewmodels/auth_viewmodel.dart';
 import '../widgets/auth_text_field.dart';
 
@@ -44,7 +44,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           context,
         ).showSnackBar(SnackBar(content: Text(next.failure!.message), backgroundColor: AppColors.error));
       } else if (next.user != null) {
-        Navigator.of(context).pushNamedAndRemoveUntil(RouteConstants.home, (route) => false);
+        Navigator.of(context).pushNamedAndRemoveUntil(RouteName.home, (route) => false);
       }
     });
 
