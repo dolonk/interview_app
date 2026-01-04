@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:interview_app/route/route_name.dart';
 import '../features/authentication/presentation/views/login_screen.dart';
 import '../features/authentication/presentation/views/register_screen.dart';
-import '../features/documents/presentation/views/document_editor_screen.dart';
-import '../features/documents/domain/entities/document_entity.dart';
+import '../features/editor/presentation/views/document_editor_screen.dart';
+import '../shared/entities/document_entity.dart';
 import '../shared/widgets/main_navigation.dart';
 
 class RouteConfig {

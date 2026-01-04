@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
-import '../../domain/entities/document_entity.dart';
+import '../../../../shared/entities/document_entity.dart';
 import '../../../../core/theme/app_colors.dart';
 
 class DocumentCard extends StatelessWidget {

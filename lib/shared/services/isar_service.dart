@@ -1,6 +1,6 @@
 import 'package:path_provider/path_provider.dart';
 import 'package:isar_community/isar.dart';
-import '../../features/documents/domain/entities/document_entity.dart';
+import '../entities/document_entity.dart';
 
 /// Service class to handle Isar database operations
 class IsarService {

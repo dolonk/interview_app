@@ -4,6 +4,7 @@ import '../../core/theme/app_colors.dart';
 import '../../features/home/presentation/views/home_tab.dart';
 import '../../features/profile/presentation/views/profile_tab.dart';
 import '../../core/di/injection_container.dart';
+import '../../route/route_name.dart';
 
 class MainNavigation extends ConsumerStatefulWidget {
   const MainNavigation({super.key});
@@ -14,19 +15,17 @@ class MainNavigation extends ConsumerStatefulWidget {
 
 class _MainNavigationState extends ConsumerState<MainNavigation> {
   int _currentIndex = 0;
+  bool _hasLoadedHome = false;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadDocuments();
-    });
   }
 
-  void _loadDocuments() {
+  void _loadHomeDocuments() {
     final user = ref.read(firebaseAuthProvider).currentUser;
     if (user != null) {
-      ref.read(documentViewModelProvider.notifier).loadDocuments(user.uid);
+      ref.read(homeViewModelProvider.notifier).loadDocuments(user.uid);
     }
   }
 
@@ -39,35 +38,61 @@ class _MainNavigationState extends ConsumerState<MainNavigation> {
 
   @override
   Widget build(BuildContext context) {
-    // Listen for errors/success
+    // Watch home repository - when ready, load documents for home list
+    final homeRepoState = ref.watch(homeRepositoryProvider);
+    homeRepoState.whenData((_) {
+      if (!_hasLoadedHome) {
+        _hasLoadedHome = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _loadHomeDocuments();
+        });
+      }
+    });
+
+    // Listen for document upload success and navigate to editor
     ref.listen(documentViewModelProvider, (previous, next) {
-      if (next.failure != null) {
+      // Handle errors (exclude initialization errors)
+      if (next.failure != null && !next.failure!.message.contains('not initialized')) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(next.failure!.message), backgroundColor: AppColors.error));
         ref.read(documentViewModelProvider.notifier).clearMessages();
       }
+
+      // Handle success message
       if (next.successMessage != null) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(next.successMessage!), backgroundColor: AppColors.success));
         ref.read(documentViewModelProvider.notifier).clearMessages();
       }
+
+      // Navigate to editor after new upload and refresh home list
+      if (next.lastUploadedDocument != null && previous?.lastUploadedDocument != next.lastUploadedDocument) {
+        final document = next.lastUploadedDocument!;
+        ref.read(documentViewModelProvider.notifier).clearLastUploadedDocument();
+
+        // Refresh home list after upload
+        _loadHomeDocuments();
+
+        // Navigate to editor
+        Navigator.pushNamed(context, RouteName.editor, arguments: document);
+      }
     });
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('e-Signature'),
+        automaticallyImplyLeading: false,
+        title: Text(_currentIndex == 0 ? 'My Documents' : 'Profile'),
         centerTitle: true,
         elevation: 0,
-        actions: [if (_currentIndex == 0) IconButton(icon: const Icon(Icons.refresh), onPressed: _loadDocuments)],
+        actions: [if (_currentIndex == 0) IconButton(icon: const Icon(Icons.refresh), onPressed: _loadHomeDocuments)],
       ),
       body: IndexedStack(
         index: _currentIndex,
         children: [
-          HomeTab(onUploadPressed: _onUploadPressed, onRefresh: _loadDocuments),
-          const _UploadTab(),
+          HomeTab(onUploadPressed: _onUploadPressed, onRefresh: _loadHomeDocuments),
           const ProfileTab(),
         ],
       ),
@@ -75,9 +100,12 @@ class _MainNavigationState extends ConsumerState<MainNavigation> {
         currentIndex: _currentIndex,
         onTap: (index) {
           if (index == 1) {
+            // Upload button - trigger file picker, stay on home
             _onUploadPressed();
-          } else {
-            setState(() => _currentIndex = index);
+          } else if (index == 0) {
+            setState(() => _currentIndex = 0);
+          } else if (index == 2) {
+            setState(() => _currentIndex = 1); // Profile is now index 1 in IndexedStack
           }
         },
         type: BottomNavigationBarType.fixed,
@@ -91,24 +119,6 @@ class _MainNavigationState extends ConsumerState<MainNavigation> {
             label: 'Upload',
           ),
           BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Profile'),
-        ],
-      ),
-    );
-  }
-}
-
-class _UploadTab extends StatelessWidget {
-  const _UploadTab();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.cloud_upload_outlined, size: 80, color: AppColors.primary),
-          SizedBox(height: 16),
-          Text('Tap Upload to select a document', style: TextStyle(fontSize: 16, color: AppColors.textSecondary)),
         ],
       ),
     );

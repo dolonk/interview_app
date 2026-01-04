@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../domain/entities/field_entity.dart';
+import '../../../../shared/entities/field_entity.dart';
 import '../../../../core/theme/app_colors.dart';
 
 /// Bottom toolbar for selecting field types to add

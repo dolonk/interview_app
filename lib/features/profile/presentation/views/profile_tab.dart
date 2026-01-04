@@ -19,6 +19,7 @@ class ProfileTab extends ConsumerWidget {
       child: Column(
         children: [
           Gap(20.h),
+
           // Profile Avatar
           CircleAvatar(
             radius: 50.r,
@@ -29,24 +30,28 @@ class ProfileTab extends ConsumerWidget {
             ),
           ),
           Gap(16.h),
+
           // Email
           Text(
             user?.email ?? 'No email',
             style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
           ),
           Gap(8.h),
+
           // UID
           Text(
             'UID: ${user?.uid.substring(0, 8) ?? 'N/A'}...',
             style: TextStyle(fontSize: 12.sp, color: AppColors.textSecondary),
           ),
           Gap(32.h),
+
           // Profile Options
           _buildProfileOption(icon: Icons.person_outline, title: 'Account Settings', onTap: () {}),
           _buildProfileOption(icon: Icons.notifications_outlined, title: 'Notifications', onTap: () {}),
           _buildProfileOption(icon: Icons.help_outline, title: 'Help & Support', onTap: () {}),
           _buildProfileOption(icon: Icons.info_outline, title: 'About', onTap: () => _showAboutDialog(context)),
           Gap(24.h),
+
           // Logout Button
           SizedBox(
             width: double.infinity,

@@ -1,5 +1,3 @@
-/// Field entity for document editor
-/// Represents a draggable field on the PDF document
 library;
 
 enum FieldType { signature, text, checkbox, date }
@@ -57,16 +55,16 @@ class FieldEntity {
 
     switch (type) {
       case FieldType.signature:
-        width = 0.25; // 25% of page width
-        height = 0.08; // 8% of page height
+        width = 0.25;
+        height = 0.08;
         break;
       case FieldType.text:
         width = 0.3;
         height = 0.04;
         break;
       case FieldType.checkbox:
-        width = 0.05;
-        height = 0.03;
+        width = 0.08;
+        height = 0.05;
         break;
       case FieldType.date:
         width = 0.2;

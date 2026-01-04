@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../route/route_name.dart';
-import '../../../documents/presentation/widgets/document_card.dart';
-import '../../../documents/presentation/widgets/empty_documents.dart';
+import '../widgets/document_card.dart';
+import '../widgets/empty_documents.dart';
 
 class HomeTab extends ConsumerWidget {
   final VoidCallback onUploadPressed;
@@ -14,9 +14,10 @@ class HomeTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(documentViewModelProvider);
+    final state = ref.watch(homeViewModelProvider);
 
-    if (state.isLoading) {
+    // Show loading while initializing or loading
+    if (state.isInitializing || state.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
 
@@ -34,7 +35,7 @@ class HomeTab extends ConsumerWidget {
           return DocumentCard(
             document: document,
             onTap: () {
-              // Navigate to document editor (Phase 4)
+              // Navigate to document editor
               Navigator.pushNamed(context, RouteName.editor, arguments: document);
             },
             onDelete: () {
@@ -60,6 +61,8 @@ class HomeTab extends ConsumerWidget {
               final user = ref.read(firebaseAuthProvider).currentUser;
               if (user != null) {
                 ref.read(documentViewModelProvider.notifier).deleteDocument(documentId, user.uid);
+                // Refresh home list after delete
+                ref.read(homeViewModelProvider.notifier).loadDocuments(user.uid);
               }
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),

@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:isar_community/isar.dart';
 import 'package:path_provider/path_provider.dart';
-import '../../domain/entities/document_entity.dart';
+import '../../../../shared/entities/document_entity.dart';
 import '../../../../core/errors/exceptions.dart';
 
 /// Local data source for document operations

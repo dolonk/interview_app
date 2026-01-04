@@ -1,6 +1,6 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/document_entity.dart';
+import '../../../../shared/entities/document_entity.dart';
 import '../../domain/repositories/document_repository.dart';
 import '../../../../core/errors/failures.dart';
 
@@ -11,6 +11,7 @@ class DocumentState {
   final bool isInitializing;
   final Failure? failure;
   final String? successMessage;
+  final DocumentEntity? lastUploadedDocument; // For navigation after upload
 
   const DocumentState({
     this.documents = const [],
@@ -18,6 +19,7 @@ class DocumentState {
     this.isInitializing = false,
     this.failure,
     this.successMessage,
+    this.lastUploadedDocument,
   });
 
   DocumentState copyWith({
@@ -26,6 +28,8 @@ class DocumentState {
     bool? isInitializing,
     Failure? failure,
     String? successMessage,
+    DocumentEntity? lastUploadedDocument,
+    bool clearLastUploaded = false,
   }) {
     return DocumentState(
       documents: documents ?? this.documents,
@@ -33,6 +37,7 @@ class DocumentState {
       isInitializing: isInitializing ?? this.isInitializing,
       failure: failure,
       successMessage: successMessage,
+      lastUploadedDocument: clearLastUploaded ? null : (lastUploadedDocument ?? this.lastUploadedDocument),
     );
   }
 
@@ -44,7 +49,6 @@ class DocumentState {
 /// ViewModel for document operations
 class DocumentViewModel extends StateNotifier<DocumentState> {
   final DocumentRepository? _repository;
-
   DocumentViewModel(this._repository) : super(DocumentState.initial());
 
   // Factory for loading state
@@ -98,20 +102,15 @@ class DocumentViewModel extends StateNotifier<DocumentState> {
         allowMultiple: false,
       );
 
-      if (result == null || result.files.isEmpty) {
-        return; // User cancelled
-      }
+      if (result == null || result.files.isEmpty) return;
 
       final file = result.files.first;
-
       if (file.path == null) {
         state = state.copyWith(failure: const FileFailure('Could not access the file'));
         return;
       }
 
       state = state.copyWith(isLoading: true);
-
-      // Determine file type
       final fileType = file.extension?.toLowerCase() ?? 'pdf';
 
       // Save document
@@ -127,14 +126,19 @@ class DocumentViewModel extends StateNotifier<DocumentState> {
           state = state.copyWith(isLoading: false, failure: failure);
         },
         (document) async {
-          // Reload documents
+          // Reload documents and set lastUploadedDocument for navigation
           await loadDocuments(userId);
-          state = state.copyWith(successMessage: 'Document uploaded successfully');
+          state = state.copyWith(successMessage: 'Document uploaded successfully', lastUploadedDocument: document);
         },
       );
     } catch (e) {
       state = state.copyWith(isLoading: false, failure: FileFailure('Failed to pick file: $e'));
     }
+  }
+
+  /// Clear last uploaded document (after navigation)
+  void clearLastUploadedDocument() {
+    state = state.copyWith(clearLastUploaded: true);
   }
 
   /// Delete a document
@@ -145,7 +149,6 @@ class DocumentViewModel extends StateNotifier<DocumentState> {
     }
 
     state = state.copyWith(isLoading: true);
-
     final result = await _repository.deleteDocument(id);
 
     await result.fold(

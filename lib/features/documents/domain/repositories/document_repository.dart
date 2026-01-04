@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/errors/failures.dart';
-import '../entities/document_entity.dart';
+import '../../../../shared/entities/document_entity.dart';
 
 /// Repository interface for document operations
 abstract class DocumentRepository {
