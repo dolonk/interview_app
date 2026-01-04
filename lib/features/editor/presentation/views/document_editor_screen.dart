@@ -141,7 +141,10 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
         if (!isPublished)
           TextButton.icon(
             onPressed: _toggleMode,
-            icon: Icon(isEditMode ? Icons.draw : Icons.edit, color: isEditMode ? AppColors.info : AppColors.primary),
+            icon: Icon(
+              isEditMode ? Icons.draw : Icons.edit,
+              color: isEditMode ? AppColors.info : AppColors.primary,
+            ),
             label: Text(
               isEditMode ? 'Signing' : 'Edit Mode',
               style: TextStyle(color: isEditMode ? AppColors.info : AppColors.primary),
@@ -186,7 +189,6 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
 
     try {
       final file = await viewModel.saveExportFile(fileName);
-
       if (!mounted) return;
 
       showModalBottomSheet(
@@ -215,7 +217,10 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
               SizedBox(height: 4.h),
               Container(
                 padding: EdgeInsets.all(8.w),
-                decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(8.r)),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
                 child: Text(
                   file.path,
                   style: TextStyle(fontSize: 12.sp, fontFamily: 'monospace'),
@@ -237,7 +242,10 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
                       onPressed: () async {
                         Navigator.pop(ctx);
                         await SharePlus.instance.share(
-                          ShareParams(files: [XFile(file.path)], subject: 'Field Config - ${widget.document.name}'),
+                          ShareParams(
+                            files: [XFile(file.path)],
+                            subject: 'Field Config - ${widget.document.name}',
+                          ),
                         );
                       },
                       icon: const Icon(Icons.share),
@@ -252,9 +260,9 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Export failed: ${e.toString()}'), backgroundColor: AppColors.error));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Export failed: ${e.toString()}'), backgroundColor: AppColors.error),
+        );
       }
     }
   }
@@ -370,7 +378,7 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
                 child: InteractiveViewer(
                   minScale: 1.0,
                   maxScale: 3.0,
-                  child: Image.memory(pageImage /*fit: BoxFit.contain, width: constraints.maxWidth*/),
+                  child: Image.memory(pageImage, fit: BoxFit.contain, width: constraints.maxWidth),
                 ),
               ),
               // Field overlays
@@ -405,8 +413,10 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
               }
             },
             onDelete: () => ref.read(editorViewModelProvider.notifier).deleteField(field.id),
-            onPositionChanged: (x, y) => ref.read(editorViewModelProvider.notifier).updateFieldPosition(field.id, x, y),
-            onSizeChanged: (w, h) => ref.read(editorViewModelProvider.notifier).updateFieldSize(field.id, w, h),
+            onPositionChanged: (x, y) =>
+                ref.read(editorViewModelProvider.notifier).updateFieldPosition(field.id, x, y),
+            onSizeChanged: (w, h) =>
+                ref.read(editorViewModelProvider.notifier).updateFieldSize(field.id, w, h),
           );
         }).toList(),
       ),
@@ -451,12 +461,18 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
     if (currentMode == EditorMode.edit) {
       editorNotifier.enterSignMode();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Preview mode - Tap fields to test input'), backgroundColor: AppColors.info),
+        const SnackBar(
+          content: Text('Preview mode - Tap fields to test input'),
+          backgroundColor: AppColors.info,
+        ),
       );
     } else {
       editorNotifier.enterEditMode();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Edit mode - Drag fields to reposition'), backgroundColor: AppColors.info),
+        const SnackBar(
+          content: Text('Edit mode - Drag fields to reposition'),
+          backgroundColor: AppColors.info,
+        ),
       );
     }
   }
@@ -464,8 +480,10 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
   void _onPublish() async {
     final confirm = await showDialog<bool>(
       context: context,
+
       builder: (context) => AlertDialog(
         title: const Text('Publish Document?'),
+        actionsAlignment: MainAxisAlignment.spaceBetween,
         content: const Text(
           'Once published, you cannot edit field positions.\n\nThe document will be ready for signing.',
         ),
@@ -481,10 +499,33 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
     );
 
     if (confirm == true) {
+      // Show loading dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircularProgressIndicator(),
+              SizedBox(height: 16.h),
+              const Text('Publishing document...'),
+            ],
+          ),
+        ),
+      );
+
       final success = await ref.read(editorViewModelProvider.notifier).publishDocument();
-      if (success && mounted) {
+
+      if (!mounted) return;
+      Navigator.pop(context); // Close loading dialog
+
+      if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Document published successfully!'), backgroundColor: AppColors.success),
+          const SnackBar(
+            content: Text('Document published successfully!'),
+            backgroundColor: AppColors.success,
+          ),
         );
       }
     }
@@ -504,7 +545,7 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
         builder: (dialogContext) => _SigningCompleteDialog(
           onClose: () {
             Navigator.pop(dialogContext);
-            Navigator.pop(context); // Go back to home
+            Navigator.pop(context);
           },
           onDownloadPdf: () async {
             Navigator.pop(dialogContext);
@@ -520,7 +561,6 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
           duration: const Duration(seconds: 3),
         ),
       );
-      // Optional: Highlight fields or scroll to first missing field
     }
   }
 
@@ -575,7 +615,10 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
               SizedBox(height: 4.h),
               Container(
                 padding: EdgeInsets.all(8.w),
-                decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(8.r)),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
                 child: Text(
                   file.path,
                   style: TextStyle(fontSize: 12.sp, fontFamily: 'monospace'),
@@ -629,9 +672,9 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
         ),
       );
     } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Failed to generate PDF'), backgroundColor: AppColors.error));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to generate PDF'), backgroundColor: AppColors.error),
+      );
     }
   }
 }

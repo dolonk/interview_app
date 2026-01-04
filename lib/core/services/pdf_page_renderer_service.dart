@@ -48,16 +48,12 @@ class PdfPageRendererService {
       // Get page size
       final size = await _pdf!.getPageSize(pageIndex: pageIndex);
 
-      // Render at scaled resolution for quality
-      final renderWidth = (size.width * scale).toInt();
-      final renderHeight = (size.height * scale).toInt();
-
       final imageBytes = await _pdf!.renderPage(
         pageIndex: pageIndex,
         x: 0,
         y: 0,
-        width: renderWidth,
-        height: renderHeight,
+        width: size.width.toInt(),
+        height: size.height.toInt(),
         scale: scale,
         background: Colors.white,
       );

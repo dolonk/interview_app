@@ -187,7 +187,7 @@ class EditorViewModel extends StateNotifier<EditorState> {
 
     result.fold(
       (failure) => state = state.copyWith(isSaving: false, failure: failure),
-      (configPath) => state = state.copyWith(isSaving: false, successMessage: 'Saved ${state.fields.length} fields'),
+      (configPath) => state = state.copyWith(isSaving: false),
     );
   }
 
@@ -206,12 +206,7 @@ class EditorViewModel extends StateNotifier<EditorState> {
     }
 
     // Mark as published and enter sign mode
-    state = state.copyWith(
-      isPublished: true,
-      mode: EditorMode.sign,
-      clearSelection: true,
-      successMessage: 'Document published! Ready for signing.',
-    );
+    state = state.copyWith(isPublished: true, mode: EditorMode.sign, clearSelection: true);
 
     return true;
   }
