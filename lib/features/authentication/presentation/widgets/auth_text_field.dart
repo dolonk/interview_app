@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:gap/gap.dart';
 import '../../../../core/theme/app_colors.dart';
 
 class AuthTextField extends StatelessWidget {
@@ -30,7 +32,7 @@ class AuthTextField extends StatelessWidget {
             context,
           ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600, color: AppColors.textPrimary),
         ),
-        const SizedBox(height: 8),
+        Gap(16.h),
         TextFormField(
           controller: controller,
           obscureText: isPassword,

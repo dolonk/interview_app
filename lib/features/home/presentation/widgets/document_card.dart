@@ -25,14 +25,17 @@ class DocumentCard extends StatelessWidget {
           child: Row(
             children: [
               // PDF Icon
-              Container(
-                width: 48.w,
-                height: 48.w,
-                decoration: BoxDecoration(
-                  color: _getFileColor().withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8.r),
+              Hero(
+                tag: 'doc_icon_${document.id}',
+                child: Container(
+                  width: 48.w,
+                  height: 48.w,
+                  decoration: BoxDecoration(
+                    color: _getFileColor().withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: Icon(_getFileIcon(), color: _getFileColor(), size: 28.sp),
                 ),
-                child: Icon(_getFileIcon(), color: _getFileColor(), size: 28.sp),
               ),
               Gap(12.w),
               // Document Info
@@ -69,16 +72,16 @@ class DocumentCard extends StatelessWidget {
                   }
                 },
                 itemBuilder: (context) => [
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'edit',
-                    child: Row(children: [Icon(Icons.edit, size: 20), SizedBox(width: 8), Text('Edit')]),
+                    child: Row(children: [Icon(Icons.edit, size: 20), Gap(8), Text('Edit')]),
                   ),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'delete',
                     child: Row(
                       children: [
                         Icon(Icons.delete, size: 20, color: Colors.red),
-                        SizedBox(width: 8),
+                        Gap(8),
                         Text('Delete', style: TextStyle(color: Colors.red)),
                       ],
                     ),

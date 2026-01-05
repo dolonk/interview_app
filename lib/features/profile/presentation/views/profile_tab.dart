@@ -112,15 +112,15 @@ class ProfileTab extends ConsumerWidget {
   void _showAboutDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => const AlertDialog(
-        title: Text('About e-Signature'),
+      builder: (context) => AlertDialog(
+        title: const Text('About e-Signature'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Version: 1.0.0'),
-            SizedBox(height: 8),
-            Text('A simple app to upload, edit, and sign PDF documents.'),
+            const Text('Version: 1.0.0'),
+            const Gap(8),
+            const Text('A simple app to upload, edit, and sign PDF documents.'),
           ],
         ),
       ),

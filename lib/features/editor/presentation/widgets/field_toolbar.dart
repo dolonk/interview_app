@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:gap/gap.dart';
 import '../../../../shared/entities/field_entity.dart';
 import '../../../../core/theme/app_colors.dart';
 
@@ -88,7 +89,7 @@ class _FieldButton extends StatelessWidget {
               ),
               child: Icon(icon, size: 24.sp, color: color),
             ),
-            SizedBox(height: 4.h),
+            Gap(4.h),
             Text(
               label,
               style: TextStyle(

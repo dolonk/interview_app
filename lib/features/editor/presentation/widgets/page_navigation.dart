@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:gap/gap.dart';
 import '../../../../core/theme/app_colors.dart';
 
 /// Page navigation controls for multi-page PDF documents
@@ -34,10 +35,10 @@ class PageNavigation extends StatelessWidget {
         children: [
           // First page button
           _NavButton(icon: Icons.first_page, onTap: currentPage > 1 ? onFirstPage : null),
-          SizedBox(width: 8.w),
+          Gap(8.w),
           // Previous page button
           _NavButton(icon: Icons.chevron_left, onTap: currentPage > 1 ? onPreviousPage : null),
-          SizedBox(width: 16.w),
+          Gap(16.w),
           // Page indicator
           Container(
             padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
@@ -47,10 +48,10 @@ class PageNavigation extends StatelessWidget {
               style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500, color: AppColors.textPrimary),
             ),
           ),
-          SizedBox(width: 16.w),
+          Gap(16.w),
           // Next page button
           _NavButton(icon: Icons.chevron_right, onTap: currentPage < totalPages ? onNextPage : null),
-          SizedBox(width: 8.w),
+          Gap(8.w),
           // Last page button
           _NavButton(icon: Icons.last_page, onTap: currentPage < totalPages ? onLastPage : null),
         ],

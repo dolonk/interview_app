@@ -9,99 +9,16 @@ import '../../../../core/errors/failures.dart';
 import '../../../../core/services/pdf_generator_service.dart';
 import '../../../../core/services/pdf_page_renderer_service.dart';
 import '../../domain/repositories/editor_repository.dart';
-
-/// Editor mode enum
-enum EditorMode { edit, sign }
-
-/// State for document editor
-class EditorState {
-  final DocumentEntity? document;
-  final List<FieldEntity> fields;
-  final FieldEntity? selectedField;
-  final int currentPage;
-  final int totalPages;
-  final Map<int, Uint8List> pageImages;
-  final double pdfPageWidth;
-  final double pdfPageHeight;
-  final EditorMode mode;
-  final bool isLoading;
-  final bool isRenderingPage;
-  final bool isSaving;
-  final bool isPublished;
-  final Failure? failure;
-  final String? successMessage;
-
-  const EditorState({
-    this.document,
-    this.fields = const [],
-    this.selectedField,
-    this.currentPage = 1,
-    this.totalPages = 1,
-    this.pageImages = const {},
-    this.pdfPageWidth = 0,
-    this.pdfPageHeight = 0,
-    this.mode = EditorMode.edit,
-    this.isLoading = false,
-    this.isRenderingPage = false,
-    this.isSaving = false,
-    this.isPublished = false,
-    this.failure,
-    this.successMessage,
-  });
-
-  /// Check if editing is allowed
-  bool get canEdit => !isPublished && mode == EditorMode.edit;
-
-  EditorState copyWith({
-    DocumentEntity? document,
-    List<FieldEntity>? fields,
-    FieldEntity? selectedField,
-    bool clearSelection = false,
-    int? currentPage,
-    int? totalPages,
-    Map<int, Uint8List>? pageImages,
-    double? pdfPageWidth,
-    double? pdfPageHeight,
-    EditorMode? mode,
-    bool? isLoading,
-    bool? isRenderingPage,
-    bool? isSaving,
-    bool? isPublished,
-    Failure? failure,
-    String? successMessage,
-  }) {
-    return EditorState(
-      document: document ?? this.document,
-      fields: fields ?? this.fields,
-      selectedField: clearSelection ? null : (selectedField ?? this.selectedField),
-      currentPage: currentPage ?? this.currentPage,
-      totalPages: totalPages ?? this.totalPages,
-      pageImages: pageImages ?? this.pageImages,
-      pdfPageWidth: pdfPageWidth ?? this.pdfPageWidth,
-      pdfPageHeight: pdfPageHeight ?? this.pdfPageHeight,
-      mode: mode ?? this.mode,
-      isLoading: isLoading ?? this.isLoading,
-      isRenderingPage: isRenderingPage ?? this.isRenderingPage,
-      isSaving: isSaving ?? this.isSaving,
-      isPublished: isPublished ?? this.isPublished,
-      failure: failure,
-      successMessage: successMessage,
-    );
-  }
-
-  /// Get current page image
-  Uint8List? get currentPageImage => pageImages[currentPage];
-
-  factory EditorState.initial() => const EditorState();
-  factory EditorState.loading() => const EditorState(isLoading: true);
-}
+import '../../domain/entities/editor_state_entity.dart';
 
 /// ViewModel for document editor
-class EditorViewModel extends StateNotifier<EditorState> {
-  final EditorRepository? _repository;
+class EditorViewModel extends StateNotifier<EditorStateEntity> {
+  final EditorRepository _repository;
   final PdfPageRendererService _pdfRenderer = PdfPageRendererService();
 
-  EditorViewModel([this._repository]) : super(EditorState.initial());
+  EditorViewModel({required EditorRepository repository})
+    : _repository = repository,
+      super(EditorStateEntity.initial());
 
   /// Initialize with document and render the first page
   Future<void> initDocumentWithRendering(DocumentEntity document) async {

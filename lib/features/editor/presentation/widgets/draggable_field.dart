@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:gap/gap.dart';
 import '../../../../shared/entities/field_entity.dart';
 import '../../../../core/theme/app_colors.dart';
 
@@ -190,7 +191,7 @@ class _DraggableFieldState extends State<DraggableField> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Icon(_getFieldIcon(), size: 14.sp, color: _getFieldColor()),
-        SizedBox(width: 4.w),
+        Gap(4.w),
         Flexible(
           child: Text(
             _getFieldLabel(),

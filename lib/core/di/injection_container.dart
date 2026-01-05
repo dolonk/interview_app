@@ -6,11 +6,13 @@ import '../../features/authentication/domain/repositories/auth_repository.dart';
 import '../../features/documents/data/datasources/document_local_datasource.dart';
 import '../../features/documents/data/repositories/document_repository_impl.dart';
 import '../../features/documents/domain/repositories/document_repository.dart';
+import '../../features/documents/domain/entities/document_state_entity.dart';
 import '../../features/documents/presentation/viewmodels/document_viewmodel.dart';
 import '../../features/home/data/datasources/home_local_datasource.dart';
 import '../../features/home/data/repositories/home_repository_impl.dart';
 import '../../features/home/domain/repositories/home_repository.dart';
 import '../../features/home/presentation/viewmodels/home_viewmodel.dart';
+import '../../features/editor/domain/entities/editor_state_entity.dart';
 import '../../features/editor/data/datasources/editor_local_datasource.dart';
 import '../../features/editor/data/repositories/editor_repository_impl.dart';
 import '../../features/editor/domain/repositories/editor_repository.dart';
@@ -61,12 +63,12 @@ final documentRepositoryProvider = FutureProvider<DocumentRepository>((ref) asyn
   return DocumentRepositoryImpl(dataSource);
 });
 
-final documentViewModelProvider = StateNotifierProvider<DocumentViewModel, DocumentState>((ref) {
+final documentViewModelProvider = StateNotifierProvider<DocumentViewModel, DocumentStateEntity>((ref) {
   final repoAsync = ref.watch(documentRepositoryProvider);
   return repoAsync.when(
     data: (repo) => DocumentViewModel(repo),
-    loading: () => DocumentViewModel.loading(),
-    error: (e, _) => DocumentViewModel.error(e.toString()),
+    loading: () => throw UnimplementedError('Repository still loading'),
+    error: (e, _) => throw Exception('Failed to initialize repository: $e'),
   );
 });
 
@@ -79,7 +81,7 @@ final editorRepositoryProvider = Provider<EditorRepository>((ref) {
   return EditorRepositoryImpl(ref.read(editorLocalDataSourceProvider));
 });
 
-final editorViewModelProvider = StateNotifierProvider.autoDispose<EditorViewModel, EditorState>((ref) {
+final editorViewModelProvider = StateNotifierProvider.autoDispose<EditorViewModel, EditorStateEntity>((ref) {
   final repo = ref.watch(editorRepositoryProvider);
-  return EditorViewModel(repo);
+  return EditorViewModel(repository: repo);
 });

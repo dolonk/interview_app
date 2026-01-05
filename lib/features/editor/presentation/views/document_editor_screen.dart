@@ -9,7 +9,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../../../shared/entities/document_entity.dart';
 import '../../../../shared/entities/field_entity.dart';
 import '../../../../core/di/injection_container.dart';
-import '../viewmodels/editor_viewmodel.dart';
+import '../../domain/entities/editor_state_entity.dart';
 import '../widgets/draggable_field.dart';
 import '../widgets/field_toolbar.dart';
 import '../widgets/page_navigation.dart';
@@ -88,15 +88,26 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
     );
   }
 
-  PreferredSizeWidget _buildAppBar(EditorState state) {
+  PreferredSizeWidget _buildAppBar(EditorStateEntity state) {
     final isEditMode = state.canEdit;
     final isPublished = state.isPublished;
 
     return AppBar(
-      title: Text(
-        widget.document.name,
-        style: TextStyle(fontSize: 16.sp),
-        overflow: TextOverflow.ellipsis,
+      title: Row(
+        children: [
+          Hero(
+            tag: 'doc_icon_${widget.document.id}',
+            child: Icon(_getFileIcon(), color: _getFileColor(), size: 22.sp),
+          ),
+          Gap(8.w),
+          Flexible(
+            child: Text(
+              widget.document.name,
+              style: TextStyle(fontSize: 16.sp),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
       ),
       actions: [
         PopupMenuButton<String>(
@@ -116,11 +127,7 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
               value: 'export',
               enabled: state.fields.isNotEmpty,
               child: Row(
-                children: [
-                  const Icon(Icons.upload_file, size: 20),
-                  SizedBox(width: 8.w),
-                  const Text('Export Fields (JSON)'),
-                ],
+                children: [const Icon(Icons.upload_file, size: 20), Gap(8.w), const Text('Export Fields (JSON)')],
               ),
             ),
 
@@ -128,25 +135,33 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
               value: 'import',
               enabled: !isPublished,
               child: Row(
-                children: [
-                  const Icon(Icons.download, size: 20),
-                  SizedBox(width: 8.w),
-                  const Text('Import Fields (JSON)'),
-                ],
+                children: [const Icon(Icons.download, size: 20), Gap(8.w), const Text('Import Fields (JSON)')],
               ),
             ),
           ],
         ),
 
         if (!isPublished)
-          TextButton.icon(
-            onPressed: _toggleMode,
-            icon: Icon(isEditMode ? Icons.draw : Icons.edit, color: isEditMode ? AppColors.info : AppColors.primary),
-            label: Text(
-              isEditMode ? 'Signing' : 'Edit Mode',
-              style: TextStyle(color: isEditMode ? AppColors.info : AppColors.primary),
+          if (state.fields.isNotEmpty)
+            TextButton.icon(
+              onPressed: () {
+                if (isEditMode && state.fields.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Please add at least one field before switching to signing mode'),
+                      backgroundColor: Colors.orange,
+                    ),
+                  );
+                  return;
+                }
+                _toggleMode();
+              },
+              icon: Icon(isEditMode ? Icons.draw : Icons.edit, color: isEditMode ? AppColors.info : AppColors.primary),
+              label: Text(
+                isEditMode ? 'Signing' : 'Edit Mode',
+                style: TextStyle(color: isEditMode ? AppColors.info : AppColors.primary),
+              ),
             ),
-          ),
         if (isEditMode && !isPublished)
           Padding(
             padding: EdgeInsets.only(right: 8.w),
@@ -199,7 +214,7 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
               Row(
                 children: [
                   Icon(Icons.check_circle, color: AppColors.success, size: 24.sp),
-                  SizedBox(width: 8.w),
+                  Gap(8.w),
                   Text(
                     'Exported Successfully!',
                     style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
@@ -306,7 +321,7 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
     }
   }
 
-  Widget _buildPdfViewerWithOverlay(EditorState state, bool isEditMode) {
+  Widget _buildPdfViewerWithOverlay(EditorStateEntity state, bool isEditMode) {
     // Show loading while PDF is being loaded or page is rendering
     if (state.isLoading) {
       return Center(
@@ -314,7 +329,7 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const CircularProgressIndicator(),
-            SizedBox(height: 16.h),
+            Gap(8.w),
             Text(
               'Loading document...',
               style: TextStyle(fontSize: 14.sp, color: AppColors.textSecondary),
@@ -332,7 +347,7 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.error_outline, size: 64.sp, color: AppColors.error),
-            SizedBox(height: 16.h),
+            Gap(8.w),
             Text(
               'Document not found',
               style: TextStyle(fontSize: 16.sp, color: AppColors.textSecondary),
@@ -352,7 +367,7 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const CircularProgressIndicator(),
-            SizedBox(height: 16.h),
+            Gap(8.w),
             Text(
               'Rendering page ${state.currentPage}...',
               style: TextStyle(fontSize: 14.sp, color: AppColors.textSecondary),
@@ -385,7 +400,7 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
     );
   }
 
-  Widget _buildFieldOverlay(EditorState state, bool isEditMode, BoxConstraints constraints) {
+  Widget _buildFieldOverlay(EditorStateEntity state, bool isEditMode, BoxConstraints constraints) {
     final currentPageFields = state.fields.where((f) => f.page == state.currentPage).toList();
     if (currentPageFields.isEmpty) return const SizedBox.shrink();
 
@@ -525,53 +540,26 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
   }
 
   void _onPublish() async {
-    final confirm = await showDialog<bool>(
+    showDialog(
       context: context,
-
+      barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Text('Publish Document?'),
-        actionsAlignment: MainAxisAlignment.spaceBetween,
-        content: const Text(
-          'Once published, you cannot edit field positions.\n\nThe document will be ready for signing.',
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [const CircularProgressIndicator(), Gap(8.w), const Text('Publishing document...')],
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.success),
-            child: const Text('Publish', style: TextStyle(color: Colors.white)),
-          ),
-        ],
       ),
     );
 
-    if (confirm == true) {
-      // Show loading dialog
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => AlertDialog(
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const CircularProgressIndicator(),
-              SizedBox(height: 16.h),
-              const Text('Publishing document...'),
-            ],
-          ),
-        ),
+    final success = await ref.read(editorViewModelProvider.notifier).publishDocument();
+
+    if (!mounted) return;
+    Navigator.pop(context); // Close loading dialog
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Document published successfully!'), backgroundColor: AppColors.success),
       );
-
-      final success = await ref.read(editorViewModelProvider.notifier).publishDocument();
-
-      if (!mounted) return;
-      Navigator.pop(context); // Close loading dialog
-
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Document published successfully!'), backgroundColor: AppColors.success),
-        );
-      }
     }
   }
 
@@ -616,11 +604,7 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
       builder: (context) => AlertDialog(
         content: Column(
           mainAxisSize: MainAxisSize.min,
-          children: [
-            const CircularProgressIndicator(),
-            SizedBox(height: 16.h),
-            const Text('Generating PDF...'),
-          ],
+          children: [const CircularProgressIndicator(), Gap(8.w), const Text('Generating PDF...')],
         ),
       ),
     );
@@ -644,19 +628,19 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
               Row(
                 children: [
                   Icon(Icons.check_circle, color: AppColors.success, size: 24.sp),
-                  SizedBox(width: 8.w),
+                  Gap(8.w),
                   Text(
                     'PDF Generated!',
                     style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
-              SizedBox(height: 12.h),
+              Gap(8.w),
               Text(
                 'Saved to:',
                 style: TextStyle(fontSize: 14.sp, color: AppColors.textSecondary),
               ),
-              SizedBox(height: 4.h),
+              Gap(8.w),
               Container(
                 padding: EdgeInsets.all(8.w),
                 decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(8.r)),
@@ -665,7 +649,7 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
                   style: TextStyle(fontSize: 12.sp, fontFamily: 'monospace'),
                 ),
               ),
-              SizedBox(height: 16.h),
+              Gap(8.w),
               Row(
                 children: [
                   Expanded(
@@ -678,7 +662,7 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
                       label: const Text('Done'),
                     ),
                   ),
-                  SizedBox(width: 8.w),
+                  Gap(8.w),
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: () {
@@ -693,7 +677,7 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
                       label: const Text('Preview'),
                     ),
                   ),
-                  SizedBox(width: 8.w),
+                  Gap(8.w),
                   Expanded(
                     child: ElevatedButton.icon(
                       onPressed: () async {
@@ -718,6 +702,30 @@ class _DocumentEditorScreenState extends ConsumerState<DocumentEditorScreen> {
       ).showSnackBar(const SnackBar(content: Text('Failed to generate PDF'), backgroundColor: AppColors.error));
     }
   }
+
+  IconData _getFileIcon() {
+    switch (widget.document.fileType.toLowerCase()) {
+      case 'pdf':
+        return Icons.picture_as_pdf;
+      case 'docx':
+      case 'doc':
+        return Icons.description;
+      default:
+        return Icons.insert_drive_file;
+    }
+  }
+
+  Color _getFileColor() {
+    switch (widget.document.fileType.toLowerCase()) {
+      case 'pdf':
+        return Colors.red;
+      case 'docx':
+      case 'doc':
+        return Colors.blue;
+      default:
+        return Colors.grey;
+    }
+  }
 }
 
 /// Dialog shown after signing is complete
@@ -735,9 +743,9 @@ class _SigningCompleteDialog extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(Icons.check_circle, color: AppColors.success, size: 64.sp),
-          SizedBox(height: 16.h),
+          Gap(8.w),
           const Text('All required fields have been filled.'),
-          SizedBox(height: 8.h),
+          Gap(8.w),
           Text(
             'Download the signed PDF or close the document.',
             style: TextStyle(fontSize: 12.sp, color: AppColors.textSecondary),

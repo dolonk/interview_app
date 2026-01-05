@@ -56,13 +56,14 @@ class HomeTab extends ConsumerWidget {
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
               final user = ref.read(firebaseAuthProvider).currentUser;
               if (user != null) {
-                ref.read(documentViewModelProvider.notifier).deleteDocument(documentId, user.uid);
-                // Refresh home list after delete
-                ref.read(homeViewModelProvider.notifier).loadDocuments(user.uid);
+                // Wait for delete to complete
+                await ref.read(documentViewModelProvider.notifier).deleteDocument(documentId, user.uid);
+                // Then refresh home list
+                await ref.read(homeViewModelProvider.notifier).loadDocuments(user.uid);
               }
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),

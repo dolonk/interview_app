@@ -1,82 +1,15 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../shared/entities/document_entity.dart';
-import '../../domain/repositories/document_repository.dart';
 import '../../../../core/errors/failures.dart';
+import '../../domain/repositories/document_repository.dart';
+import '../../domain/entities/document_state_entity.dart';
 
-/// State for document management
-class DocumentState {
-  final List<DocumentEntity> documents;
-  final bool isLoading;
-  final bool isInitializing;
-  final Failure? failure;
-  final String? successMessage;
-  final DocumentEntity? lastUploadedDocument;
-
-  const DocumentState({
-    this.documents = const [],
-    this.isLoading = false,
-    this.isInitializing = false,
-    this.failure,
-    this.successMessage,
-    this.lastUploadedDocument,
-  });
-
-  DocumentState copyWith({
-    List<DocumentEntity>? documents,
-    bool? isLoading,
-    bool? isInitializing,
-    Failure? failure,
-    String? successMessage,
-    DocumentEntity? lastUploadedDocument,
-    bool clearLastUploaded = false,
-  }) {
-    return DocumentState(
-      documents: documents ?? this.documents,
-      isLoading: isLoading ?? this.isLoading,
-      isInitializing: isInitializing ?? this.isInitializing,
-      failure: failure,
-      successMessage: successMessage,
-      lastUploadedDocument: clearLastUploaded ? null : (lastUploadedDocument ?? this.lastUploadedDocument),
-    );
-  }
-
-  factory DocumentState.initial() => const DocumentState();
-  factory DocumentState.loading() => const DocumentState(isLoading: true);
-  factory DocumentState.initializing() => const DocumentState(isInitializing: true);
-}
-
-/// ViewModel for document operations
-class DocumentViewModel extends StateNotifier<DocumentState> {
-  final DocumentRepository? _repository;
-  DocumentViewModel(this._repository) : super(DocumentState.initial());
-
-  // Factory for loading state
-  factory DocumentViewModel.loading() {
-    return DocumentViewModel._internal(null, isInitializing: true);
-  }
-
-  // Factory for error state
-  factory DocumentViewModel.error(String message) {
-    return DocumentViewModel._internal(null, errorMessage: message);
-  }
-
-  DocumentViewModel._internal(this._repository, {bool isInitializing = false, String? errorMessage})
-    : super(
-        isInitializing
-            ? DocumentState.initializing()
-            : errorMessage != null
-            ? DocumentState(failure: CacheFailure(errorMessage))
-            : DocumentState.initial(),
-      );
+class DocumentViewModel extends StateNotifier<DocumentStateEntity> {
+  final DocumentRepository _repository;
+  DocumentViewModel(this._repository) : super(DocumentStateEntity.initial());
 
   /// Load all documents for a user
   Future<void> loadDocuments(String userId) async {
-    if (_repository == null) {
-      state = state.copyWith(failure: const CacheFailure('Repository not initialized'));
-      return;
-    }
-
     state = state.copyWith(isLoading: true, isInitializing: false);
 
     final result = await _repository.getDocuments(userId);
@@ -89,11 +22,6 @@ class DocumentViewModel extends StateNotifier<DocumentState> {
 
   /// Pick and upload a document
   Future<void> pickAndUploadDocument(String userId) async {
-    if (_repository == null) {
-      state = state.copyWith(failure: const CacheFailure('Repository not initialized'));
-      return;
-    }
-
     try {
       // Open file picker
       final result = await FilePicker.platform.pickFiles(
@@ -143,11 +71,6 @@ class DocumentViewModel extends StateNotifier<DocumentState> {
 
   /// Delete a document
   Future<void> deleteDocument(int id, String userId) async {
-    if (_repository == null) {
-      state = state.copyWith(failure: const CacheFailure('Repository not initialized'));
-      return;
-    }
-
     state = state.copyWith(isLoading: true);
     final result = await _repository.deleteDocument(id);
 

@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
 import 'package:signature/signature.dart';
 import 'package:image_picker/image_picker.dart';
@@ -29,7 +30,6 @@ class _FieldInputDialogState extends State<FieldInputDialog> with SingleTickerPr
   bool _checkboxValue = false;
   DateTime? _selectedDate;
   Uint8List? _uploadedSignature;
-  String? _uploadedFileName;
 
   @override
   void initState() {
@@ -69,7 +69,7 @@ class _FieldInputDialogState extends State<FieldInputDialog> with SingleTickerPr
       title: Row(
         children: [
           Icon(_getFieldIcon(), color: _getFieldColor()),
-          SizedBox(width: 8.w),
+          Gap(8.w),
           Text(FieldEntity.getDisplayName(widget.field.type)),
         ],
       ),
@@ -153,7 +153,7 @@ class _FieldInputDialogState extends State<FieldInputDialog> with SingleTickerPr
           ),
           style: TextStyle(fontFamily: 'Cursive', fontSize: 24.sp, fontStyle: FontStyle.italic),
         ),
-        SizedBox(height: 8.h),
+        Gap(8.h),
         Text(
           'Your name will be converted to a signature style',
           style: TextStyle(fontSize: 12.sp, color: AppColors.textSecondary),
@@ -175,7 +175,7 @@ class _FieldInputDialogState extends State<FieldInputDialog> with SingleTickerPr
             child: Signature(controller: _signatureController, height: 140.h, backgroundColor: Colors.grey.shade50),
           ),
         ),
-        SizedBox(height: 8.h),
+        Gap(8.h),
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
@@ -205,12 +205,11 @@ class _FieldInputDialogState extends State<FieldInputDialog> with SingleTickerPr
                 ),
                 child: Image.memory(_uploadedSignature!, fit: BoxFit.contain),
               ),
-              SizedBox(height: 8.h),
+              Gap(8.h),
 
               TextButton(
                 onPressed: () => setState(() {
                   _uploadedSignature = null;
-                  _uploadedFileName = null;
                 }),
                 child: const Text('Remove'),
               ),
@@ -231,7 +230,7 @@ class _FieldInputDialogState extends State<FieldInputDialog> with SingleTickerPr
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.cloud_upload_outlined, size: 48.sp, color: AppColors.primary),
-                  SizedBox(height: 8.h),
+                  Gap(8.h),
                   const Text('Tap to upload signature image'),
                 ],
               ),
@@ -249,7 +248,6 @@ class _FieldInputDialogState extends State<FieldInputDialog> with SingleTickerPr
       final bytes = await image.readAsBytes();
       setState(() {
         _uploadedSignature = bytes;
-        _uploadedFileName = image.name;
       });
     }
   }
@@ -291,7 +289,7 @@ class _FieldInputDialogState extends State<FieldInputDialog> with SingleTickerPr
             ],
           ),
         ),
-        SizedBox(height: 12.h),
+        Gap(12.h),
         SizedBox(
           width: double.infinity,
           child: OutlinedButton.icon(
