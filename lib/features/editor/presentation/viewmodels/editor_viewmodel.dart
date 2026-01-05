@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -357,9 +356,14 @@ class EditorViewModel extends StateNotifier<EditorState> {
         await exportDir.create(recursive: true);
       }
 
-      final file = File('${exportDir.path}/$fileName');
+      // Add timestamp to filename for uniqueness
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final baseFileName = fileName.replaceAll('.json', '');
+      final uniqueFileName = '${baseFileName}_$timestamp.json';
 
-      // Explicitly delete if exists to ensure clean overwrite
+      final file = File('${exportDir.path}/$uniqueFileName');
+
+      // Explicitly delete if exists to ensure clean overwrite (shouldn't happen with timestamp)
       if (await file.exists()) {
         try {
           await file.delete();
