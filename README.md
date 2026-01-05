@@ -87,5 +87,6 @@ lib/
   - Drag and drop fields (Signature, Date, Text).
   - Resizable and draggable elements.
   - Multi-page PDF support.
+  - page can Zoom able
 - **Signing Mode**: Fill in fields and sign documents.
 - **Export/Share**: Generate final signed PDFs and share them.
